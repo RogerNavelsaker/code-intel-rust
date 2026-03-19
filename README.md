@@ -29,3 +29,13 @@ nix build
 ./result/bin/code-intel-rust lsp serve
 ./result/bin/code-intel-rust lsp definition src/lib.rs 12 4 --repo-root /path/to/worktree
 ```
+
+Cross-tool usage:
+
+```bash
+repo-map query "**/*" --term agent --term scheduler --lang rs --json
+code-intel-rust ast outline src/agent/scheduler.rs --repo-root /path/to/worktree
+code-intel-rust lsp references src/agent/scheduler.rs 18 8 --repo-root /path/to/worktree
+```
+
+Use `repo-map` for discovery, then `code-intel-rust ast ...` for the first precise pass. Only move to `lsp ...` when you need semantic definitions, references, hover, diagnostics, or call hierarchy.
