@@ -1,11 +1,14 @@
 #!/usr/bin/env bun
 import process from "node:process";
-import { callLspService, commandExists, fail, parseCommonArgs, printOutput, serveLsp } from "./code-intel-shared.ts";
+import { callLspService, commandExists, fail, parseCommonArgs, printOutput, scopedPort, serveLsp } from "./shared.ts";
+
+const { args, json, repoRoot } = parseCommonArgs(process.argv.slice(2));
 
 const config = {
   name: "rust-analyzer",
   command: ["rust-analyzer"],
-  port: Number(process.env.RUST_CODE_INTEL_PORT ?? 33101),
+  defaultPort: 33101,
+  port: scopedPort(33101, repoRoot, process.env.RUST_CODE_INTEL_PORT),
   languageId: "rust",
   initializeOptions: {
     checkOnSave: false,
@@ -14,17 +17,16 @@ const config = {
   },
 };
 
-const { args, json } = parseCommonArgs(process.argv.slice(2));
 const [command, ...rest] = args;
 if (!command) fail("usage", "Usage: bun lsp.ts <serve|definition|references|hover|diagnostics|calls> ...", json);
 
 if (command === "serve") {
   if (!commandExists(config.command[0])) fail("missing_language_server", "rust-analyzer is not installed. Add it to flox and activate the environment.", json);
-  await serveLsp(config);
+  await serveLsp(config, repoRoot);
   process.stdin.resume();
 } else {
   const payload = toPayload(command, rest, json);
-  const data = await callLspService(config, payload, json);
+  const data = await callLspService(config, payload, json, repoRoot);
   printOutput(data, json);
 }
 

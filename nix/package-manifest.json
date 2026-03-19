@@ -5,7 +5,7 @@
   },
   "binary": {
     "name": "code-intel-rust",
-    "entrypoint": "main.ts",
+    "entrypoint": "src/cli.ts",
     "aliases": []
   },
   "meta": {
